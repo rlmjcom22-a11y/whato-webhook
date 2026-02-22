@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 
 const app = express();
 app.use(express.json());
@@ -22,9 +21,9 @@ No solicite datos sensibles por chat.
 
 app.post("/webhook", async (req, res) => {
   try {
-    const mensaje = req.body.message || "";
+    const mensaje = req.body?.message ?? "";
 
-    const respuesta = await fetch("https://api.openai.com/v1/responses", {
+    const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -36,15 +35,21 @@ app.post("/webhook", async (req, res) => {
       })
     });
 
-    const data = await respuesta.json();
-    const texto = data.output[0].content[0].text;
+    const data = await r.json();
 
-    res.json({ reply: texto });
+    const texto =
+      data?.output?.[0]?.content?.[0]?.text ||
+      "Buenas tardes. Gracias por su mensaje. ¿Su cita la desea por la mañana o por la tarde?";
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ reply: "Hubo un error procesando el mensaje." });
+    return res.json({ reply: texto });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      reply: "Por el momento no puedo procesar su mensaje. ¿Su cita la desea por la mañana o por la tarde?"
+    });
   }
 });
 
-app.listen(3000, () => console.log("Servidor activo en puerto 3000"));
+// IMPORTANTÍSIMO: Railway usa process.env.PORT
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
