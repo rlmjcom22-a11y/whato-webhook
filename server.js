@@ -18,7 +18,9 @@ No prometa resultados.
 No dé montos exactos.
 No solicite datos sensibles por chat.
 `;
-
+app.get("/webhook", (req, res) => {
+  res.status(200).json({ ok: true, message: "Webhook activo" });
+});
 app.post("/webhook", async (req, res) => {
   try {
     const mensaje = req.body?.message ?? "";
